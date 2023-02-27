@@ -46,6 +46,7 @@ import {
 } from './routes/v1/version'
 import { runMigrations, connectToMongoose } from './utils/database'
 import { getApplicationLogs, getItemLogs } from './routes/v1/admin'
+import { exportModel } from './routes/v1/export'
 import logger, { expressErrorHandler, expressLogger } from './utils/logger'
 import { ensureBucketExists } from './utils/minio'
 import { getUser } from './utils/user'
@@ -122,6 +123,8 @@ server.get('/api/v1/docs/menu-content', ...getDocsMenuContent)
 server.get('/api/v1/admin/logs', ...getApplicationLogs)
 server.get('/api/v1/admin/logs/build/:buildId', ...getItemLogs)
 server.get('/api/v1/admin/logs/approval/:approvalId', ...getItemLogs)
+
+server.get('/api/v1/export/:uuid/version/:version', ...exportModel)
 
 server.use('/api', expressErrorHandler)
 
