@@ -21,20 +21,19 @@ async function script() {
   const blob = ``
 
   const token = await getAccessToken({ id: 'user', _id: 'user' }, [
-    { type: 'repository', class: '', name: imageName, actions: ['pull'] },
+    { type: 'repository', class: '', name: 'catalog', actions: ['delete'] },
   ])
 
   const authorisation = `Bearer ${token}`
 
 
 
-  const { data } = await axios.get(`${registry}/${imageName}/manifests/${version}`, {
+  const { data } = await axios.delete(`${registry}/${imageName}/manifests/${version}`, {
     headers: {
       Authorization: authorisation,
     },
     httpsAgent,
   })
-  fs.writeFileSync('/tmp/manifest', JSON.stringify(data))
 
   logger.info(data, '')
 

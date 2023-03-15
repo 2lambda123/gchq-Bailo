@@ -21,14 +21,14 @@ async function script() {
   const blob = ``
 
   const token = await getAccessToken({ id: 'user', _id: 'user' }, [
-    { type: 'repository', class: '', name: imageName, actions: ['pull'] },
+    { type: 'repository', class: '', name: imageName, actions: ['push'] },
   ])
 
   const authorisation = `Bearer ${token}`
 
 
 
-  const { data } = await axios.get(`${registry}/${imageName}/manifests/${version}`, {
+  const { data } = await axios.post(`${registry}/${imageName}/`, {
     headers: {
       Authorization: authorisation,
     },
