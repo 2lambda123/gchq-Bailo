@@ -11,10 +11,7 @@ import { connectToMongoose, disconnectFromMongoose } from '../../utils/database'
 import logger from '../../utils/logger'
 import { UserDoc } from 'server/models/User'
 import { Stream } from 'stream'
-
-const httpsAgent = new https.Agent({
-    rejectUnauthorized: !config.get('registry.insecure'),
-  })
+import { createRegistryClient, getBlobFile, getImageManifest } from 'server/utils/registry'
 
 export const exportModel = [
     ensureUserRole('user'),
@@ -56,47 +53,25 @@ export const exportModel = [
 
 
 export const getDockerFiles = async (user: string, uuid: string, version: string, archive: archiver.Archiver ) => {
-    await connectToMongoose()
 
-    const registry = `https://registry:5000/v2`
-    const imageName = `internal/${uuid}`
+    const registry = await createRegistryClient();
+    const image = {
+        namespace: 'internal',
+        model: uuid,
+        version
+    }
 
-    const token = await getAccessToken({ id: `${user}`, _id: `${user}`}, [
-        { type: 'repository', class: '', name: imageName , actions: ['pull'] },
-    ])
-    const authorisation = `Bearer ${token}`
+    const manifest = await getImageManifest(registry, image)
+    archive.append(JSON.stringify(manifest), {name: 'manifest'})
 
-    const { data } = await axios.get(`${registry}/${imageName}/manifests/${version}`, {
-        headers: {
-          Authorization: authorisation,
-        },
-        httpsAgent,
-    });
-    archive.append(JSON.stringify(data), {name: 'manifest'})
+    const layers = manifest? manifest.fsLayers: [];
     
-    
-
-    for ( const {blobSum} of data.fsLayers) {
+    for ( const {blobSum} of layers ) {
         logger.info(blobSum, 'Getting blob file')
-        const blobFile = await getBlobFiles(blobSum, authorisation, registry, imageName);
-        logger.info(blobSum, 'Blob downloaded successfully')
+        const blobFile = await getBlobFile(blobSum, registry, image);
+        logger.info(uuid, 'Blob downloaded successfully')
         archive.append(JSON.stringify(blobFile), {name: `${blobSum}.blob`})
     }
 
-
-    return data;
-
-
-
 }
 
-const getBlobFiles = async (blobSha: string, authToken: string, registry: string, imageName:string ) => {
-    const {data} = await axios.get(`${registry}/${imageName}/blobs/${blobSha}`,{
-        headers: {
-            Authorization: authToken,
-        },
-        httpsAgent,
-        responseType: 'blob',
-    });
-    return data;
-}

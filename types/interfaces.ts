@@ -297,3 +297,16 @@ export interface MinimalEntry {
   uncompressedSize: number
   fileName: string
 }
+
+export interface fsLayer {
+  blobSum: string
+}
+
+export interface ImageManifest {
+  schemaVersion: number
+  name: string
+  tag: string
+  architecture: string
+  fsLayers: fsLayer[]
+  history?: object[]
+}
