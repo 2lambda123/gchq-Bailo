@@ -30,7 +30,7 @@ export type Manifest = {
   Layers: string[]
 }
 
-async function getUploadUrl(axios: AxiosInstance, registry: string, image: string) {
+export async function getUploadUrl(axios: AxiosInstance, registry: string, image: string) {
   const startUploadUrl = `${registry}/v2/${image}/blobs/uploads/`
   const { location } = (await axios.post(startUploadUrl)).headers
 
@@ -46,7 +46,7 @@ async function* readChunks(file: string, chunkSize: number): AsyncIterableIterat
   }
 }
 
-async function pushFile(axios: AxiosInstance, registry: string, uploadUrl: string, file: string) {
+export async function pushFile(axios: AxiosInstance, registry: string, uploadUrl: string, file: string) {
   const sha256 = createHash('sha256')
   let bytesRead = 0
   let followUploadUrl = uploadUrl

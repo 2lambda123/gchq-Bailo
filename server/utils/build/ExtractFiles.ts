@@ -8,7 +8,7 @@ import { VersionDoc } from '../../models/Version'
 import { BuildOpts, BuildStep, Files } from './BuildStep'
 import { BuildLogger } from './BuildLogger'
 
-async function unzipFile(zipPath: string) {
+export async function unzipFile(zipPath: string) {
   const outputDir = dirname(zipPath)
 
   await unzip.Open.file(zipPath).then((d) => d.extract({ path: outputDir, concurrency: 5 }))

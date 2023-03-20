@@ -25,7 +25,7 @@ module.exports = {
   registry: {
     host: 'localhost:8080',
     port: 8080,
-    protocol: 'https',
+    protocol: 'http',
 
     service: 'RegistryAuth',
     issuer: 'RegistryIssuer',
