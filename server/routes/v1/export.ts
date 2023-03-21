@@ -1,17 +1,10 @@
-import config from 'config'
-import https from 'https'
-import axios from 'axios'
+
 import archiver from 'archiver'
-import * as fs from 'fs'
 import { Request, Response } from 'express'
 import bodyParser from 'body-parser'
 import { ensureUserRole } from '../../utils/user'
-import { getAccessToken } from './registryAuth'
-import { connectToMongoose, disconnectFromMongoose } from '../../utils/database'
 import logger from '../../utils/logger'
-import { UserDoc } from 'server/models/User'
-import { Stream } from 'stream'
-import { createRegistryClient, getBlobFile, getImageManifest } from 'server/utils/registry'
+import { getDockerFiles, getModelMetadata } from 'server/utils/exportModel'
 
 export const exportModel = [
     ensureUserRole('user'),
@@ -34,6 +27,7 @@ export const exportModel = [
         archive.pipe(res);
 
         // Get Metadata
+        await getModelMetadata(req.user, uuid, version, archive);
         // Get Model Schema information
 
         // Get Code bundle
@@ -50,28 +44,3 @@ export const exportModel = [
         
     }
 ]
-
-
-export const getDockerFiles = async (user: string, uuid: string, version: string, archive: archiver.Archiver ) => {
-
-    const registry = await createRegistryClient();
-    const image = {
-        namespace: 'internal',
-        model: uuid,
-        version
-    }
-
-    const manifest = await getImageManifest(registry, image)
-    archive.append(JSON.stringify(manifest), {name: 'manifest'})
-
-    const layers = manifest? manifest.fsLayers: [];
-    
-    for ( const {blobSum} of layers ) {
-        logger.info(blobSum, 'Getting blob file')
-        const blobFile = await getBlobFile(blobSum, registry, image);
-        logger.info(uuid, 'Blob downloaded successfully')
-        archive.append(JSON.stringify(blobFile), {name: `${blobSum}.blob`})
-    }
-
-}
-
