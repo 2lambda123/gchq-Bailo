@@ -21,7 +21,7 @@ async function script(this: any) {
     version: 'v1.0',
   }
 
-  await unzipFile('/home/ec2-user/Downloads/minimal-model-for-testing-xn6gve.zip')
+  await unzipFile('/home/ec2-user/Downloads/minimal-model-for-testing-xn6gve.zip') // Solvable by streaming
 
   const manifestString = fs.readFileSync('/home/ec2-user/Downloads/manifest', 'utf-8')
   const manifest = JSON.parse(manifestString)
@@ -37,7 +37,7 @@ async function script(this: any) {
 
   const blobs: any[] = rawBlobs.filter((elem, index, self) => index === self.indexOf(elem))
 
-  logger.info(blobs)
+  // logger.info(blobs)
 
   const token = await getAccessToken({ id: 'admin', _id: 'admin' }, [
     { type: 'repository', name: `${image.namespace}/${image.model}`, actions: ['pull', 'push'] },

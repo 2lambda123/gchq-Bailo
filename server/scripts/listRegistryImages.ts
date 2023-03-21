@@ -4,6 +4,7 @@ import https from 'https'
 import axios from 'axios'
 import { getAccessToken } from '../routes/v1/registryAuth'
 import { connectToMongoose, disconnectFromMongoose } from '../utils/database'
+import { createRegistryClient } from '../utils/registry'
 import logger from '../utils/logger'
 
 const httpsAgent = new https.Agent({
@@ -13,7 +14,7 @@ const httpsAgent = new https.Agent({
 async function script() {
   await connectToMongoose()
 
-  const registry = `https://localhost:5000/v2`
+  const registry = await createRegistryClient()
 
   const token = await getAccessToken({ id: 'user', _id: 'user' }, [
     { type: 'registry', class: '', name: 'catalog', actions: ['*'] },
@@ -21,7 +22,7 @@ async function script() {
 
   const authorisation = `Bearer ${token}`
 
-  const { data: catalog } = await axios.get(`${registry}/_catalog`, {
+  const { data: catalog } = await axios.get(`${registry.address}/_catalog`, {
     headers: {
       Authorization: authorisation,
     },
