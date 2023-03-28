@@ -9,7 +9,7 @@ import logger from './logger'
 import { NotFound } from './result';
 
 
-export const getDockerFiles = async (user: string, uuid: string, version: string, archive: archiver.Archiver ) => {
+export const getDockerFiles = async (uuid: string, version: string, archive: archiver.Archiver ) => {
 
     const registry = await createRegistryClient();
     const image = {
@@ -27,7 +27,7 @@ export const getDockerFiles = async (user: string, uuid: string, version: string
         logger.info(blobSum, 'Getting blob file')
         const blobFile = await getBlobFile(blobSum, registry, image);
         logger.info(uuid, 'Blob downloaded successfully')
-        archive.append(JSON.stringify(blobFile), {name: `${blobSum}.blob`})
+        archive.append(JSON.stringify(blobFile), {name: `${blobSum}`})
     }
 }
 

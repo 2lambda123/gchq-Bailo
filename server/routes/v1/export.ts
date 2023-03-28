@@ -18,6 +18,12 @@ export const exportModel = [
         res.set('Content-Type', 'application/zip')
         res.set('Cache-Control', 'private, max-age=604800, immutable')
         const archive = archiver('zip')
+        const dockerTar = archiver('zip')
+
+        dockerTar.on('error',(err) => {
+            logger.error(err, `Errored during archiving.`)
+            throw err
+        })
 
         
         archive.on('error', (err) => {
@@ -25,6 +31,7 @@ export const exportModel = [
             throw err
         })
         archive.pipe(res);
+        archive.append(dockerTar, {name: `${uuid}.tar.gz`})
 
         // Get Metadata
         await getModelMetadata(req.user, uuid, version, archive);
@@ -35,11 +42,12 @@ export const exportModel = [
         // Get Binaries bundle
 
         // Get Docker Files from registry
-        await getDockerFiles(req.user.id, uuid, version, archive)
+        await getDockerFiles(uuid, version, dockerTar)
         // Bundle all information into .zip/.tar
 
 
         // Send bundled file 
+        dockerTar.finalize()
         archive.finalize()
         
     }
