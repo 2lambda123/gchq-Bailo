@@ -29,6 +29,7 @@ interface Files {
 // return { modelUuid: model }
 // }
 
+// Are we using Minio?
 export type MinioFile = Express.Multer.File & { bucket: string }
 export interface MulterFiles {
   [fieldname: string]: Array<MinioFile>
@@ -100,25 +101,34 @@ function checkSeldonVersion(seldonVersion: string) {
   }
 }
 
+// need to write function to return metadata from either http or import
+
+// need to write function that returns mode from either http or import
+
+// need to write function that returns modelUuid from either http or import
+
+// need to write function that returns user from either http or import
+
 export const postUpload = [
   ensureUserRole('user'),
   upload.fields([{ name: 'binary' }, { name: 'code' }, { name: 'docker' }]),
-  async (Files: Files) => {
-    const metadata = parseMetadata(Files.metadata)
-    metadata.timeStamp = new Date().toISOString()
+  async (Files: Files, metadata, mode, modelUuid, user) => {
+    const parsedMetadata = parseMetadata(metadata)
+    parsedMetadata.timeStamp = new Date().toISOString()
 
-    const schema = await getMetadataSchema(metadata)
+    const schema = await getMetadataSchema(parsedMetadata)
 
-    validateMetadata(metadata, schema)
+    validateMetadata(parsedMetadata, schema)
 
+    // are we still using Multer?
     const files = Files as unknown as MulterFiles
-    const uploadType = metadata.buildOptions.uploadType as ModelUploadType
+    const uploadType = parsedMetadata.buildOptions.uploadType as ModelUploadType
 
     switch (uploadType) {
       case ModelUploadType.Zip:
         checkZipFile('binary', files.binary)
         checkZipFile('code', files.code)
-        checkSeldonVersion(metadata.buildOptions.seldonVersion)
+        checkSeldonVersion(parsedMetadata.buildOptions.seldonVersion)
         break
       case ModelUploadType.Docker:
         checkTarFile('docker', files.docker)
@@ -130,23 +140,23 @@ export const postUpload = [
         throw BadReq({ uploadType }, 'Unknown upload type')
     }
 
-    let mode: UploadModes
+    let activeMode: UploadModes
 
-    const prop = typeof req.query.mode === 'string' ? getPropertyFromEnumValue(UploadModes, req.query.mode) : undefined
+    const prop = typeof mode === 'string' ? getPropertyFromEnumValue(UploadModes, mode) : undefined
 
-    if (!req.query.mode) {
-      mode = UploadModes.NewModel
+    if (!mode) {
+      activeMode = UploadModes.NewModel
     } else if (prop) {
-      mode = prop as UploadModes
+      activeMode = prop as UploadModes
     } else {
       throw BadReq(
         { code: 'upload_mode_invalid' },
-        `Upload mode ${req.query.mode} is not valid.  Must be one of ${Object.keys(UploadModes).join(', ')}.`
+        `Upload mode ${mode} is not valid.  Must be one of ${Object.keys(UploadModes).join(', ')}.`
       )
     }
 
-    const modelUuid = req.query.modelUuid as string
-    const name = metadata.highLevelDetails.name
+    const activeModelUuid = modelUuid as string
+    const name = parsedMetadata.highLevelDetails.name
       .toLowerCase()
       .replace(/[^a-z 0-9]/g, '')
       .replace(/ /g, '-')
@@ -154,13 +164,13 @@ export const postUpload = [
     /** Saving the model */
     let model: any
 
-    if (mode === UploadModes.NewVersion) {
+    if (activeMode === UploadModes.NewVersion) {
       // Update an existing model's version array
-      model = await findModelByUuid(req.user, modelUuid, { populate: true })
+      model = await findModelByUuid(user, activeModelUuid, { populate: true })
     } else {
       // Save a new model, and add the uploaded version to its array
-      model = await createModel(req.user, {
-        schemaRef: metadata.schemaRef,
+      model = await createModel(user, {
+        schemaRef: parsedMetadata.schemaRef,
         uuid: `${name}-${nanoid()}`,
 
         versions: [],
@@ -171,8 +181,9 @@ export const postUpload = [
 
     let version
     try {
-      version = await createVersion(req.user, {
-        version: metadata.highLevelDetails.modelCardVersion,
+      version = await createVersion(user, {
+        version: parsedMetadata.highLevelDetails.modelCardVersion,
+        // is this the same as the previous parsedMetadata?
         metadata,
         files: {},
       })
@@ -180,8 +191,8 @@ export const postUpload = [
       if (err.code === 11000) {
         throw Conflict(
           {
-            version: metadata.highLevelDetails.modelCardVersion,
-            model: modelUuid,
+            version: parsedMetadata.highLevelDetails.modelCardVersion,
+            model: activeModelUuid,
           },
           'This model already has a version with the same name'
         )
@@ -190,6 +201,7 @@ export const postUpload = [
       throw err
     }
 
+    // how to handle logs when not http?
     req.log.info({ code: 'created_model_version', version }, 'Created model version')
 
     model.versions.push(version._id)
@@ -199,13 +211,14 @@ export const postUpload = [
 
     version.model = model._id
     await version.save()
-
+    // how to handle logs when not http?
     req.log.info({ code: 'created_model', model }, 'Created model document')
 
     const [managerApproval, reviewerApproval] = await createVersionApprovals({
       version: await version.populate('model').execPopulate(),
-      user: req.user,
+      user,
     })
+    // how to handle logs when not http?
     req.log.info(
       { code: 'created_review_approvals', managerId: managerApproval._id, reviewApproval: reviewerApproval._id },
       'Successfully created approvals for review'
@@ -228,6 +241,7 @@ export const postUpload = [
           await moveFile(bucket, codeFrom, rawCodePath)
 
           await VersionModel.findOneAndUpdate({ _id: version._id }, { files: { rawCodePath, rawBinaryPath } })
+          // how to handle logs when not http?
           req.log.info(
             { code: 'adding_file_paths', rawCodePath, rawBinaryPath },
             `Adding paths for raw model exports of files to version.`
@@ -243,6 +257,7 @@ export const postUpload = [
         const binaryFrom = `${files.docker[0].bucket}/${files.docker[0].path}`
         const rawDockerPath = `model/${model._id}/version/${version._id}/raw/docker/${files.docker[0].path}`
 
+        // how to handle logs when not http?
         req.log.info({ bucket, binaryFrom, rawDockerPath })
         await moveFile(bucket, binaryFrom, rawDockerPath)
 
@@ -261,12 +276,12 @@ export const postUpload = [
         await getUploadQueue()
       ).add({
         versionId: version._id,
-        userId: req.user._id,
+        userId: user._id,
         binary: createFileRef(files.binary[0], 'binary', version),
         code: createFileRef(files.code[0], 'code', version),
         uploadType,
       })
-
+      // how to handle logs when not http?
       req.log.info({ code: 'created_upload_job', jobId }, 'Successfully created zip job in upload queue')
     }
 
@@ -275,16 +290,16 @@ export const postUpload = [
         await getUploadQueue()
       ).add({
         versionId: version._id,
-        userId: req.user._id,
+        userId: user._id,
         docker: createFileRef(files.docker[0], 'docker', version),
         uploadType,
       })
-
+      // how to handle logs when not http?
       req.log.info({ code: 'created_upload_job', jobId }, 'Successfully created docker job in upload queue')
     }
 
-    return res.json({
+    return {
       uuid: model.uuid,
-    })
+    }
   },
 ]
