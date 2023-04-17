@@ -4,14 +4,14 @@ import { Request, Response } from 'express'
 import bodyParser from 'body-parser'
 import { ensureUserRole } from '../../utils/user'
 import logger from '../../utils/logger'
-import { getDockerFiles, getModelMetadata } from 'server/utils/exportModel'
+import { getBinaryFiles, getCodeFiles, getDockerFiles, getModelMetadata } from 'server/utils/exportModel'
 
 export const exportModel = [
     ensureUserRole('user'),
     bodyParser.json(),
     async (req: Request, res: Response) => {
         // Get model params
-        const { uuid, version } = req.params
+        const { uuid, version, deploymentId } = req.params
         
         // Set .zip extension to request header
         res.set('Content-disposition', `attachment; filename=${uuid}.zip`)
@@ -38,8 +38,10 @@ export const exportModel = [
         // Get Model Schema information
 
         // Get Code bundle
+        await getCodeFiles(deploymentId, version, req.user, archive);
 
         // Get Binaries bundle
+        await getBinaryFiles(deploymentId, version, req.user, archive);
 
         // Get Docker Files from registry
         await getDockerFiles(uuid, version, dockerTar)

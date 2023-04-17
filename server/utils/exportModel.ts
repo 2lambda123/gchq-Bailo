@@ -1,6 +1,9 @@
 import archiver from 'archiver'
+import config from 'config';
+import * as Minio from 'minio';
 import { UserDoc } from 'server/models/User';
 import { getModelVersion } from 'server/routes/v1/model';
+import { findDeploymentByUuid } from 'server/services/deployment';
 import { findModelByUuid } from 'server/services/model';
 import { findVersionById, findVersionByName } from 'server/services/version';
 
@@ -51,4 +54,68 @@ export const getModelMetadata = async (user:UserDoc, uuid: string, versionName: 
 
     archive.append(JSON.stringify(version,null, '\t'), {name: 'metadata'})
     return version;
+}
+
+export const getCodeFiles = async (uuid: string, version: string, user: UserDoc, archive: archiver.Archiver) => {
+  const deployment = await findDeploymentByUuid(user, uuid)
+
+  if (deployment === null) {
+    throw NotFound({ deploymentUuid: uuid }, `Unable to find deployment for uuid ${uuid}`)
+  }
+
+  const versionDocument = await findVersionByName(user, deployment.model, version)
+
+  if (!versionDocument) {
+    throw NotFound({ deployment, version }, `Version ${version} not found for deployment ${deployment.uuid}.`)
+  }
+
+  const filePath = versionDocument.files.rawCodePath
+
+  const bucketName: string = config.get('minio.uploadBucket')
+  const client = new Minio.Client(config.get('minio'))
+
+  if (filePath) {
+    const { size } = await client.statObject(bucketName, filePath)
+
+    const codeFile = await client.getObject(bucketName, filePath)
+    if (!codeFile) {
+      throw NotFound({ code: 'object_fetch_failed', bucketName, filePath }, 'Failed to fetch object from storage')
+    }
+    logger.info(`Code file fetched from storage - size: ${size}`)
+    archive.append(codeFile, { name: 'code.zip' })
+  } else {
+    throw NotFound({ filePath }, 'Unknown file type specified')
+  }
+}
+
+export const getBinaryFiles = async (uuid: string, version: string, user: UserDoc, archive: archiver.Archiver) => {
+  const deployment = await findDeploymentByUuid(user, uuid)
+
+  if (deployment === null) {
+    throw NotFound({ deploymentUuid: uuid }, `Unable to find deployment for uuid ${uuid}`)
+  }
+
+  const versionDocument = await findVersionByName(user, deployment.model, version)
+
+  if (!versionDocument) {
+    throw NotFound({ deployment, version }, `Version ${version} not found for deployment ${deployment.uuid}.`)
+  }
+
+  const filePath = versionDocument.files.rawBinaryPath
+
+  const bucketName: string = config.get('minio.uploadBucket')
+  const client = new Minio.Client(config.get('minio'))
+
+  if (filePath) {
+    const { size } = await client.statObject(bucketName, filePath)
+
+    const binaryFile = await client.getObject(bucketName, filePath)
+    if (!binaryFile) {
+      throw NotFound({ code: 'object_fetch_failed', bucketName, filePath }, 'Failed to fetch object from storage')
+    }
+    logger.info(`binary file fetched from storage - size: ${size}`)
+    archive.append(binaryFile, { name: 'binary.bin' })
+  } else {
+    throw NotFound({ filePath }, 'Unknown file type specified')
+  }
 }
