@@ -4,7 +4,7 @@ import { Request, Response } from 'express'
 import bodyParser from 'body-parser'
 import { ensureUserRole } from '../../utils/user'
 import logger from '../../utils/logger'
-import { getBinaryFiles, getCodeFiles, getDockerFiles, getModelMetadata } from 'server/utils/exportModel'
+import { getBinaryFiles, getCodeFiles, getDockerFiles, getModelMetadata, getModelSchema } from 'server/utils/exportModel'
 
 export const exportModel = [
     ensureUserRole('user'),
@@ -34,8 +34,9 @@ export const exportModel = [
         archive.append(dockerTar, {name: `${uuid}.tar.gz`})
 
         // Get Metadata
-        await getModelMetadata(req.user, uuid, version, archive);
+        const {metadata} = await getModelMetadata(req.user, uuid, version, archive);
         // Get Model Schema information
+        await getModelSchema(metadata.schemaRef, archive);
 
         // Get Code bundle
         await getCodeFiles(deploymentId, version, req.user, archive);

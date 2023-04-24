@@ -5,6 +5,7 @@ import { UserDoc } from 'server/models/User';
 import { getModelVersion } from 'server/routes/v1/model';
 import { findDeploymentByUuid } from 'server/services/deployment';
 import { findModelByUuid } from 'server/services/model';
+import { findSchemaByRef } from 'server/services/schema';
 import { findVersionById, findVersionByName } from 'server/services/version';
 
 import { createRegistryClient, getBlobFile, getImageManifest } from 'server/utils/registry'
@@ -52,8 +53,19 @@ export const getModelMetadata = async (user:UserDoc, uuid: string, versionName: 
       throw NotFound({ code: 'version_not_found', versionName }, `Unable to find version '${versionName}'`)
     }
 
-    archive.append(JSON.stringify(version,null, '\t'), {name: 'metadata'})
+    archive.append(JSON.stringify(version,null, '\t'), {name: 'metadata.json'})
     return version;
+}
+
+export const getModelSchema = async (schemaRef: string, archive: archiver.Archiver) => {
+    const schema = await findSchemaByRef(schemaRef);
+    if (!schema) {
+      throw NotFound(
+        { code: 'schema_not_found', schemaRef },
+        `Unable to find schema '${schemaRef}'`
+      )
+    }
+  archive.append(JSON.stringify(schema, null, '\t'), {name: 'model_schema.json'})
 }
 
 export const getCodeFiles = async (uuid: string, version: string, user: UserDoc, archive: archiver.Archiver) => {
