@@ -4,6 +4,7 @@ import multer from 'multer'
 import { customAlphabet } from 'nanoid'
 import { v4 as uuidv4 } from 'uuid'
 import { ObjectId } from 'mongodb'
+import Logger from 'bunyan'
 import { moveFile } from './minio'
 import { createFileRef } from './multer'
 import { createModel, findModelByUuid } from '../services/model'
@@ -101,8 +102,6 @@ function checkSeldonVersion(seldonVersion: string) {
   }
 }
 
-// need to write function to return metadata from either http or import
-
 // need to write function that returns mode from either http or import
 
 // need to write function that returns modelUuid from either http or import
@@ -112,7 +111,7 @@ function checkSeldonVersion(seldonVersion: string) {
 export const postUpload = [
   ensureUserRole('user'),
   upload.fields([{ name: 'binary' }, { name: 'code' }, { name: 'docker' }]),
-  async (Files: Files, metadata, mode, modelUuid, user) => {
+  async (Files: Files, metadata: any, mode: UploadModes, modelUuid: string, user: any, logger: Logger) => {
     const parsedMetadata = parseMetadata(metadata)
     parsedMetadata.timeStamp = new Date().toISOString()
 
@@ -140,22 +139,6 @@ export const postUpload = [
         throw BadReq({ uploadType }, 'Unknown upload type')
     }
 
-    let activeMode: UploadModes
-
-    const prop = typeof mode === 'string' ? getPropertyFromEnumValue(UploadModes, mode) : undefined
-
-    if (!mode) {
-      activeMode = UploadModes.NewModel
-    } else if (prop) {
-      activeMode = prop as UploadModes
-    } else {
-      throw BadReq(
-        { code: 'upload_mode_invalid' },
-        `Upload mode ${mode} is not valid.  Must be one of ${Object.keys(UploadModes).join(', ')}.`
-      )
-    }
-
-    const activeModelUuid = modelUuid as string
     const name = parsedMetadata.highLevelDetails.name
       .toLowerCase()
       .replace(/[^a-z 0-9]/g, '')
@@ -164,9 +147,9 @@ export const postUpload = [
     /** Saving the model */
     let model: any
 
-    if (activeMode === UploadModes.NewVersion) {
+    if (mode === UploadModes.NewVersion) {
       // Update an existing model's version array
-      model = await findModelByUuid(user, activeModelUuid, { populate: true })
+      model = await findModelByUuid(user, modelUuid, { populate: true })
     } else {
       // Save a new model, and add the uploaded version to its array
       model = await createModel(user, {
@@ -192,7 +175,7 @@ export const postUpload = [
         throw Conflict(
           {
             version: parsedMetadata.highLevelDetails.modelCardVersion,
-            model: activeModelUuid,
+            model: modelUuid,
           },
           'This model already has a version with the same name'
         )
@@ -202,7 +185,7 @@ export const postUpload = [
     }
 
     // how to handle logs when not http?
-    req.log.info({ code: 'created_model_version', version }, 'Created model version')
+    logger.info({ code: 'created_model_version', version }, 'Created model version')
 
     model.versions.push(version._id)
     model.latestVersion = version._id
@@ -212,14 +195,14 @@ export const postUpload = [
     version.model = model._id
     await version.save()
     // how to handle logs when not http?
-    req.log.info({ code: 'created_model', model }, 'Created model document')
+    logger.info({ code: 'created_model', model }, 'Created model document')
 
     const [managerApproval, reviewerApproval] = await createVersionApprovals({
       version: await version.populate('model').execPopulate(),
       user,
     })
     // how to handle logs when not http?
-    req.log.info(
+    logger.info(
       { code: 'created_review_approvals', managerId: managerApproval._id, reviewApproval: reviewerApproval._id },
       'Successfully created approvals for review'
     )
@@ -242,7 +225,7 @@ export const postUpload = [
 
           await VersionModel.findOneAndUpdate({ _id: version._id }, { files: { rawCodePath, rawBinaryPath } })
           // how to handle logs when not http?
-          req.log.info(
+          logger.info(
             { code: 'adding_file_paths', rawCodePath, rawBinaryPath },
             `Adding paths for raw model exports of files to version.`
           )
@@ -258,7 +241,7 @@ export const postUpload = [
         const rawDockerPath = `model/${model._id}/version/${version._id}/raw/docker/${files.docker[0].path}`
 
         // how to handle logs when not http?
-        req.log.info({ bucket, binaryFrom, rawDockerPath })
+        logger.info({ bucket, binaryFrom, rawDockerPath })
         await moveFile(bucket, binaryFrom, rawDockerPath)
 
         await VersionModel.findOneAndUpdate({ _id: version._id }, { files: { rawDockerPath } })
@@ -282,7 +265,7 @@ export const postUpload = [
         uploadType,
       })
       // how to handle logs when not http?
-      req.log.info({ code: 'created_upload_job', jobId }, 'Successfully created zip job in upload queue')
+      logger.info({ code: 'created_upload_job', jobId }, 'Successfully created zip job in upload queue')
     }
 
     if (uploadType === ModelUploadType.Docker) {
@@ -295,7 +278,7 @@ export const postUpload = [
         uploadType,
       })
       // how to handle logs when not http?
-      req.log.info({ code: 'created_upload_job', jobId }, 'Successfully created docker job in upload queue')
+      logger.info({ code: 'created_upload_job', jobId }, 'Successfully created docker job in upload queue')
     }
 
     return {
