@@ -13,7 +13,7 @@ import { findSchemaByRef } from '../services/schema'
 import { createVersion, markVersionBuilt } from '../services/version'
 import MinioStore from './MinioStore'
 import { getUploadQueue } from './queues'
-import { BadReq, Conflict, GenericError } from './result'
+import { BadReq, Conflict, GenericError, Forbidden } from './result'
 import { ensureUserRole } from './user'
 import { validateSchema } from './validateSchema'
 import VersionModel from '../models/Version'
@@ -102,6 +102,12 @@ function checkSeldonVersion(seldonVersion: string) {
   }
 }
 
+function ensureUser(metadata: any) {
+  if (metadata.metadata.contacts.uploader.kind !== 'user') {
+    throw Forbidden({}, `Unable to authenticate user`)
+  }
+}
+
 // need to write function that returns mode from either http or import
 
 // need to write function that returns modelUuid from either http or import
@@ -109,17 +115,14 @@ function checkSeldonVersion(seldonVersion: string) {
 // need to write function that returns user from either http or import
 
 export const postUpload = [
-  ensureUserRole('user'),
   upload.fields([{ name: 'binary' }, { name: 'code' }, { name: 'docker' }]),
-  async (Files: Files, metadata: any, mode: UploadModes, modelUuid: string, user: any, logger: Logger) => {
+  async (Files: Files, metadata: any, schema: any, mode: UploadModes, modelUuid: string, user: any, logger: Logger) => {
+    ensureUser(metadata)
     const parsedMetadata = parseMetadata(metadata)
     parsedMetadata.timeStamp = new Date().toISOString()
 
-    const schema = await getMetadataSchema(parsedMetadata)
-
     validateMetadata(parsedMetadata, schema)
 
-    // are we still using Multer?
     const files = Files as unknown as MulterFiles
     const uploadType = parsedMetadata.buildOptions.uploadType as ModelUploadType
 
@@ -184,7 +187,7 @@ export const postUpload = [
       throw err
     }
 
-    // how to handle logs when not http?
+
     logger.info({ code: 'created_model_version', version }, 'Created model version')
 
     model.versions.push(version._id)
@@ -194,14 +197,14 @@ export const postUpload = [
 
     version.model = model._id
     await version.save()
-    // how to handle logs when not http?
+
     logger.info({ code: 'created_model', model }, 'Created model document')
 
     const [managerApproval, reviewerApproval] = await createVersionApprovals({
       version: await version.populate('model').execPopulate(),
       user,
     })
-    // how to handle logs when not http?
+
     logger.info(
       { code: 'created_review_approvals', managerId: managerApproval._id, reviewApproval: reviewerApproval._id },
       'Successfully created approvals for review'
@@ -224,7 +227,7 @@ export const postUpload = [
           await moveFile(bucket, codeFrom, rawCodePath)
 
           await VersionModel.findOneAndUpdate({ _id: version._id }, { files: { rawCodePath, rawBinaryPath } })
-          // how to handle logs when not http?
+
           logger.info(
             { code: 'adding_file_paths', rawCodePath, rawBinaryPath },
             `Adding paths for raw model exports of files to version.`
@@ -240,7 +243,7 @@ export const postUpload = [
         const binaryFrom = `${files.docker[0].bucket}/${files.docker[0].path}`
         const rawDockerPath = `model/${model._id}/version/${version._id}/raw/docker/${files.docker[0].path}`
 
-        // how to handle logs when not http?
+    
         logger.info({ bucket, binaryFrom, rawDockerPath })
         await moveFile(bucket, binaryFrom, rawDockerPath)
 
@@ -264,7 +267,7 @@ export const postUpload = [
         code: createFileRef(files.code[0], 'code', version),
         uploadType,
       })
-      // how to handle logs when not http?
+
       logger.info({ code: 'created_upload_job', jobId }, 'Successfully created zip job in upload queue')
     }
 
@@ -277,7 +280,7 @@ export const postUpload = [
         docker: createFileRef(files.docker[0], 'docker', version),
         uploadType,
       })
-      // how to handle logs when not http?
+
       logger.info({ code: 'created_upload_job', jobId }, 'Successfully created docker job in upload queue')
     }
 
