@@ -18,77 +18,23 @@ import { validateSchema } from '../../utils/validateSchema'
 import VersionModel from '../../models/Version'
 import { ModelUploadType, SeldonVersion, UploadModes } from '../../../types/interfaces'
 import { getPropertyFromEnumValue } from '../../utils/general'
+import {
+  upload,
+  parseMetadata,
+  getMetadataSchema,
+  validateMetadata,
+  checkZipFile,
+  checkTarFile,
+  checkSeldonVersion,
+  handleMetadata,
+} from '../../utils/uploadExport'
 
 export type MinioFile = Express.Multer.File & { bucket: string }
 export interface MulterFiles {
   [fieldname: string]: Array<MinioFile>
 }
 
-const upload = multer({
-  storage: new MinioStore({
-    connection: config.get('minio'),
-    bucket: () => config.get('minio.uploadBucket'),
-    path: () => uuidv4(),
-  }),
-  limits: { fileSize: 34359738368 },
-})
-
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
-
-function parseMetadata(stringMetadata: string) {
-  let metadata
-
-  try {
-    metadata = JSON.parse(stringMetadata)
-  } catch (e) {
-    throw BadReq({ code: 'metadata_invalid_json', metadata: stringMetadata }, 'Metadata is not valid JSON')
-  }
-
-  return metadata
-}
-
-async function getMetadataSchema(metadata: any) {
-  const schema = await findSchemaByRef(metadata.schemaRef)
-  if (!schema) {
-    throw BadReq({ code: 'schema_not_found', schemaRef: metadata.schemaRef }, 'Schema not found')
-  }
-
-  return schema
-}
-
-function validateMetadata(metadata: any, schema: any) {
-  const schemaIsInvalid = validateSchema(metadata, schema.schema)
-  if (schemaIsInvalid) {
-    throw BadReq({ code: 'metadata_did_not_validate', errors: schemaIsInvalid }, 'Metadata did not validate correctly')
-  }
-}
-
-function checkZipFile(name: string, file: Array<MinioFile>) {
-  if (!file.length) {
-    throw BadReq({ code: 'file_not_found', name }, `Expected '${name}' file to be uploaded.`)
-  }
-
-  if (!file[0].originalname.toLowerCase().endsWith('.zip')) {
-    throw BadReq({ code: 'file_not_zip', name }, `Expected '${name}' to be a zip file.`)
-  }
-}
-
-function checkTarFile(name: string, file: Array<MinioFile>) {
-  if (!file.length) {
-    throw BadReq({ code: 'file_not_found', name }, `Expected '${name}' file to be uploaded.`)
-  }
-
-  if (!file[0].originalname.toLowerCase().endsWith('.tar')) {
-    throw BadReq({ code: 'file_not_tar', name }, `Expected '${name}' to be a tar file.`)
-  }
-}
-
-function checkSeldonVersion(seldonVersion: string) {
-  const seldonVersionsFromConfig: Array<SeldonVersion> = config.get('uiConfig.seldonVersions')
-  if (seldonVersionsFromConfig.filter((version) => version.image === seldonVersion).length === 0) {
-    throw BadReq({ seldonVersion }, `Seldon version ${seldonVersion} not recognised`)
-  }
-}
 
 export const postUpload = [
   ensureUserRole('user'),
