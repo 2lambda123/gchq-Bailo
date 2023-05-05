@@ -15,7 +15,7 @@ import { getUploadQueue } from './queues'
 import { BadReq, Conflict, GenericError, Forbidden } from './result'
 import { validateSchema } from './validateSchema'
 import VersionModel from '../models/Version'
-import { ModelUploadType, SeldonVersion, UploadModes } from '../../types/interfaces'
+import { ModelMetadata, ModelUploadType, SeldonVersion, UploadModes } from '../../types/interfaces'
 import { getPropertyFromEnumValue } from './general'
 
 export const upload = multer({
@@ -82,30 +82,12 @@ export function checkSeldonVersion(seldonVersion: string) {
   }
 }
 
-interface Metadata {
-  metadata: any
-  schema?: any
-}
-
-// export async function handleMetadata() {
-//     const parsedMetadata = parseMetadata(metadata.metadata)
-//     parsedMetadata.timeStamp = new Date().toISOString()
-//     if (metadata.schema) {
-//       validateMetadata(parsedMetadata, metadata.schema)
-//     } else {
-//       const schema = await getMetadataSchema(metadata)
-//       validateMetadata(metadata, schema)
-//     }
-//   }
-
-export async function handleMetadata(metadata: Metadata) {
-  const parsedMetadata = parseMetadata(metadata.metadata)
+export async function handleMetadata(metadata: string): Promise<ModelMetadata> {
+  const parsedMetadata = parseMetadata(metadata)
   parsedMetadata.timeStamp = new Date().toISOString()
-  if (metadata.schema) {
-    validateMetadata(parsedMetadata, metadata.schema)
-  } else {
-    const schema = await getMetadataSchema(parsedMetadata)
-    validateMetadata(parsedMetadata, schema)
-  }
+
+  const schema = await getMetadataSchema(metadata)
+  validateMetadata(parsedMetadata, schema)
+
   return parsedMetadata
 }
