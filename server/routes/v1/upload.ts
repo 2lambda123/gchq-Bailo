@@ -27,6 +27,7 @@ import {
   checkTarFile,
   checkSeldonVersion,
   handleMetadata,
+  evaluateUploadType,
 } from '../../utils/uploadExport'
 
 export type MinioFile = Express.Multer.File & { bucket: string }
@@ -40,31 +41,13 @@ export const postUpload = [
   ensureUserRole('user'),
   upload.fields([{ name: 'binary' }, { name: 'code' }, { name: 'docker' }]),
   async (req: Request, res: Response) => {
-    const metadata = parseMetadata(req.body.metadata)
-    metadata.timeStamp = new Date().toISOString()
-
-    const schema = await getMetadataSchema(metadata)
-
-    validateMetadata(metadata, schema)
+    const metadata = await handleMetadata(req.body.metadata)
 
     const files = req.files as unknown as MulterFiles
-    const uploadType = metadata.buildOptions.uploadType as ModelUploadType
 
-    switch (uploadType) {
-      case ModelUploadType.Zip:
-        checkZipFile('binary', files.binary)
-        checkZipFile('code', files.code)
-        checkSeldonVersion(metadata.buildOptions.seldonVersion)
-        break
-      case ModelUploadType.Docker:
-        checkTarFile('docker', files.docker)
-        break
-      case ModelUploadType.ModelCard:
-        // No files to check here!
-        break
-      default:
-        throw BadReq({ uploadType }, 'Unknown upload type')
-    }
+    const uploadType = metadata.buildOptions!.uploadType as ModelUploadType
+
+    evaluateUploadType(uploadType, files, metadata)
 
     let mode: UploadModes
 

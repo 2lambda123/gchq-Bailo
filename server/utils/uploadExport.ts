@@ -17,6 +17,7 @@ import { validateSchema } from './validateSchema'
 import VersionModel from '../models/Version'
 import { ModelMetadata, ModelUploadType, SeldonVersion, UploadModes } from '../../types/interfaces'
 import { getPropertyFromEnumValue } from './general'
+import { MulterFiles } from './upload'
 
 export const upload = multer({
   storage: new MinioStore({
@@ -90,4 +91,22 @@ export async function handleMetadata(metadata: string): Promise<ModelMetadata> {
   validateMetadata(parsedMetadata, schema)
 
   return parsedMetadata
+}
+
+export function evaluateUploadType(uploadType: ModelUploadType, files: MulterFiles, metadata: any) {
+  switch (uploadType) {
+    case ModelUploadType.Zip:
+      checkZipFile('binary', files.binary)
+      checkZipFile('code', files.code)
+      checkSeldonVersion(metadata.buildOptions!.seldonVersion)
+      break
+    case ModelUploadType.Docker:
+      checkTarFile('docker', files.docker)
+      break
+    case ModelUploadType.ModelCard:
+      // No files to check here!
+      break
+    default:
+      throw BadReq({ uploadType }, 'Unknown upload type')
+  }
 }
