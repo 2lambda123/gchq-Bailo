@@ -603,46 +603,10 @@ function generateSpecification() {
         },
       },
       '/importModel': {
-        get: {
+        post: {
           tags: ['importModel'],
           description: 'Import a full model version',
           parameters: [
-            {
-              name: 'mode',
-              in: 'query',
-              description: 'Whether this version is for a new model or an existing model',
-              required: true,
-              type: 'string',
-              enum: ['newVersion', 'newModel'],
-            },
-            {
-              name: 'modelUuid',
-              in: 'query',
-              description: "If mode is 'newVersion', the model to update.",
-              required: false,
-              type: 'string',
-            },
-            {
-              name: 'metadata',
-              in: 'formData',
-              description: 'Model card for the uploaded model',
-              type: 'object',
-              default: {
-                highLevelDetails: {
-                  tags: ['facebook', 'fasttext', 'NLP', 'language', 'language_identification', 'multilingual'],
-                  name: 'FastText Language Identification',
-                  modelInASentence: 'Performs language identification of words',
-                  modelOverview:
-                    'Performs language identification of words in utf-8, capable of recognizing up to 176 languages.',
-                  modelCardVersion: 'v1.0',
-                },
-                contacts: {
-                  uploader: 'user',
-                  reviewer: 'user',
-                  manager: 'user',
-                },
-              },
-            },
             {
               name: 'model',
               in: 'formData',
@@ -652,7 +616,7 @@ function generateSpecification() {
           ],
           responses: {
             '200': {
-              description: 'An archived file containing the full model of the version specified.',
+              description: 'The Success of The Model Upload. - ModelUUid',
             },
           },
         },

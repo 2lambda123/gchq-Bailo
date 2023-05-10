@@ -126,7 +126,7 @@ server.get('/api/v1/admin/logs/build/:buildId', ...getItemLogs)
 server.get('/api/v1/admin/logs/approval/:approvalId', ...getItemLogs)
 
 server.get('/api/v1/export/:uuid/version/:version', ...exportModel)
-server.get('/api/v1/importModel', ...importModel)
+server.post('/api/v1/importModel', ...importModel)
 
 server.use('/api', expressErrorHandler)
 
