@@ -18,6 +18,9 @@ import { BadReq } from '../../utils/result.js'
 import { ensureUserRole } from '../../utils/user.js'
 import logger from '../../utils/logger.js'
 import { getAccessToken } from './registryAuth.js'
+import example_schema from '../../scripts/example_schemas/minimal_upload_schema.json' assert {type:'json'}
+import example_metadata from '../../scripts/example_schemas/minimal_metadata.json' assert {type:'json'}
+import { getMetadataSchema } from '../../../src/utils/uploadHelpers.js'
 
 export type MinioFile = Express.Multer.File & { bucket: string }
 export interface MulterFiles {
@@ -39,55 +42,83 @@ export const importModel = [
     ensureUserRole('user'),
     upload.fields([{ name: 'model' }]),
     async (req: Request, res: Response) => {
-        const files = req.files as unknown as Express.Multer.File
+        // const files = req.files as unknown as Express.Multer.File
 
-        // const registry = `${config.get('registry.protocol')}://${config.get('registry.host')}`
-        // const imageName = `internal/${files.filename}`
-        // const image: ImageRef = {
-        //   namespace: 'internal',
-        //   model: `${files.filename}`,
-        //   version: 'v1.0',
+        // // const registry = `${config.get('registry.protocol')}://${config.get('registry.host')}`
+        // // const imageName = `internal/${files.filename}`
+        // // const image: ImageRef = {
+        // //   namespace: 'internal',
+        // //   model: `${files.filename}`,
+        // //   version: 'v1.0',
+        // // }
+
+        // const minio = getClient()
+        // const bucket = config.minio.buckets.uploads as string
+
+        // minio.putObject(bucket, filename, files.buffer)
+
+        // const dir = './importModel'
+        // try {
+        //     if (!fs.existsSync(dir)) {
+        //         fs.mkdirSync(dir, { recursive: true })
+        //     }
+        // } catch (err) {
+        //     logger.error(err)
         // }
 
-        const minio = getClient()
-        const bucket = config.minio.buckets.uploads as string
+        // const fileRef: FileRef = {
+        //     bucket: config.minio.buckets.uploads,
+        //     path: `/model/imports/${filename}`,
+        //     name: filename,
+        // }
 
-        minio.putObject(bucket, filename, files.buffer)
+        // // List all contents stored in the zip archive
+        // minio.listObjectsV2(bucket, `/model/imports/${filename}`).on('build', (request) => {
+        //     request.httpRequest.headers['X-Minio-Extract'] = 'true'
+        // })
 
-        const dir = './importModel'
-        try {
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true })
-            }
-        } catch (err) {
-            logger.error(err)
-        }
+        // const file = fs.createWriteStream(`${dir}/manifest`)
+        //     ; (await minio.getObject(bucket, `/model/imports/${filename}/manifest`))
+        //         .on('build', (request) => {
+        //             request.httpRequest.headers['X-Minio-Extract'] = 'true'
+        //         })
+        //         .on('httpData', (chunk) => {
+        //             file.write(chunk)
+        //         })
+        //         .on('httpDone', () => {
+        //             file.end()
+        //         })
 
-        const fileRef: FileRef = {
-            bucket: config.minio.buckets.uploads,
-            path: `/model/imports/${filename}`,
-            name: filename,
-        }
+        // return res.json({
+        //     model: filename,
+        // })
 
-        // List all contents stored in the zip archive
-        minio.listObjectsV2(bucket, `/model/imports/${filename}`).on('build', (request) => {
-            request.httpRequest.headers['X-Minio-Extract'] = 'true'
-        })
+        //Upload all manifests and blob to docker
 
-        const file = fs.createWriteStream(`${dir}/manifest`)
-            ; (await minio.getObject(bucket, `/model/imports/${filename}/manifest`))
-                .on('build', (request) => {
-                    request.httpRequest.headers['X-Minio-Extract'] = 'true'
-                })
-                .on('httpData', (chunk) => {
-                    file.write(chunk)
-                })
-                .on('httpDone', () => {
-                    file.end()
-                })
 
-        return res.json({
-            model: filename,
-        })
+        const metadata = example_metadata // minio get metadata file
+        const schemaRef = example_schema // minio get schema file
+        // const code = '../../../../frontend/cypress/fixtures/minimal_code.zip' // path to code file (local)
+        // const binary = '../../../../frontend/cypress/fixtures/minimal_binary.zip' // path to binary file (local)
+
+        //here k
+        const schema = await getMetadataSchema(metadata)
+
+
+        res.send(schema)
     },
 ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
