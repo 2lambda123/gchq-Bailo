@@ -2,12 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Docker: Attach to Node",
+      "name": "Docker: Attach to Backend",
       "type": "node",
       "request": "attach",
       "port": 9229,
       "address": "localhost",
       "localRoot": "${workspaceRoot}/backend",
+      "remoteRoot": "/app",
+      "restart": true
+    },
+    {
+      "name": "Docker: Attach to Builder",
+      "type": "node",
+      "request": "attach",
+      "port": 9239,
+      "address": "localhost",
+      "localRoot": "${workspaceRoot}/builder",
       "remoteRoot": "/app",
       "restart": true
     }

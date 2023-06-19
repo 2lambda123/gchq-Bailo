@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 services:
   mongo:
     image: mongo:6.0.4
@@ -77,6 +77,27 @@ services:
     ports:
       - 3001:3001
       - 9229:9229
+    depends_on:
+      - mongo
+      - minio
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    environment:
+      - NODE_CONFIG_ENV=docker_compose
+
+  builder:
+    build:
+      context: ./builder/
+      dockerfile: ./Dockerfile.dev
+    volumes:
+      - ./builder:/app
+      # Required for auth with the registry
+      - ./backend/certs:/certs
+      - ./backend/certs:/usr/local/share/ca-certificates
+    ports:
+      - 3002:3002
+      - 9239:9239
     depends_on:
       - mongo
       - minio

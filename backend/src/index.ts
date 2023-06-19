@@ -5,7 +5,6 @@ import shelljs from 'shelljs'
 import { createModelIndexes } from './models/Model.js'
 import { createSchemaIndexes } from './models/Schema.js'
 import processDeployments from './processors/processDeployments.js'
-import processUploads from './processors/processUploads.js'
 import { server } from './routes.js'
 import { addDefaultSchemas } from './services/schema.js'
 import config from './utils/config.js'
@@ -35,7 +34,7 @@ createSchemaIndexes()
 // lazily add default schemas
 addDefaultSchemas()
 
-await Promise.all([processUploads(), processDeployments()])
+await Promise.all([processDeployments()])
 
 const httpServer = server.listen(config.api.port, () => {
   console.log('Listening on port', config.api.port)
