@@ -14,5 +14,8 @@
   },
   "devDependencies": {
     "prettier": "^2.8.8"
+  },
+  "dependencies": {
+    "react-joyride": "^2.5.4"
   }
 }
