@@ -8,6 +8,7 @@ import 'reactflow/dist/style.css'
 import { CacheProvider, EmotionCache } from '@emotion/react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
+import { TourProvider } from '@reactour/tour'
 import { AppProps } from 'next/app'
 import Head from 'next/head'
 import { SnackbarProvider } from 'notistack'
@@ -35,10 +36,19 @@ export default function MyApp(props: MyAppProps) {
       </Head>
       <ThemeProvider theme={themeModeValue.theme}>
         <ThemeModeContext.Provider value={themeModeValue}>
-          <SnackbarProvider>
-            <CssBaseline />
-            <Component {...pageProps} />
-          </SnackbarProvider>
+          <TourProvider
+            steps={[
+              {
+                selector: '.bailo-menu-button',
+                content: 'This is the Bailo menu button!',
+              },
+            ]}
+          >
+            <SnackbarProvider>
+              <CssBaseline />
+              <Component {...pageProps} />
+            </SnackbarProvider>
+          </TourProvider>
         </ThemeModeContext.Provider>
       </ThemeProvider>
     </CacheProvider>

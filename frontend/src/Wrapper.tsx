@@ -31,6 +31,7 @@ import Switch from '@mui/material/Switch'
 import Toolbar from '@mui/material/Toolbar'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+import { useTour } from '@reactour/tour'
 import Head from 'next/head'
 import Image from 'next/legacy/image'
 import React, { MouseEvent, ReactElement, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
@@ -101,6 +102,9 @@ type WrapperProps = {
 
 export default function Wrapper({ title, page, children }: WrapperProps): ReactElement {
   const isDocsPage = useMemo(() => page.startsWith('docs'), [page])
+
+  const { setIsOpen } = useTour()
+  setIsOpen(true)
 
   const [open, setOpen] = useState(false)
   const toggleDrawer = (): void => {
@@ -194,6 +198,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
               edge='start'
               color='inherit'
               aria-label='open drawer'
+              className='bailo-menu-button'
               onClick={toggleDrawer}
               sx={{
                 marginRight: '36px',
