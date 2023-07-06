@@ -12,6 +12,7 @@ import { TourProvider } from '@reactour/tour'
 import { AppProps } from 'next/app'
 import Head from 'next/head'
 import { SnackbarProvider } from 'notistack'
+import { marketplaceSteps } from 'src/TourGuide/marketplaceSteps'
 
 import createEmotionCache from '../components/createEmotionCache'
 import ThemeModeContext from '../src/contexts/themeModeContext'
@@ -37,12 +38,15 @@ export default function MyApp(props: MyAppProps) {
       <ThemeProvider theme={themeModeValue.theme}>
         <ThemeModeContext.Provider value={themeModeValue}>
           <TourProvider
-            steps={[
-              {
-                selector: '.bailo-menu-button',
-                content: 'This is the Bailo menu button!',
-              },
-            ]}
+            steps={marketplaceSteps}
+            onClickClose={({ setCurrentStep, currentStep, steps, setIsOpen }) => {
+              if (steps) {
+                if (currentStep === steps.length - 1) {
+                  setIsOpen(false)
+                }
+                setCurrentStep((s) => (s === steps.length - 1 ? 0 : s + 1))
+              }
+            }}
           >
             <SnackbarProvider>
               <CssBaseline />

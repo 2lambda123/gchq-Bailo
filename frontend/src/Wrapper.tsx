@@ -283,7 +283,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
               <ListItemButton selected={page === 'marketplace' || page === 'model' || page === 'deployment'}>
                 <ListItemIcon>
                   {!open ? (
-                    <Tooltip title='Marketplace' arrow placement='right'>
+                    <Tooltip title='Marketplace' arrow placement='right' className='marketplace-menu-button'>
                       <DashboardIcon />
                     </Tooltip>
                   ) : (
@@ -297,7 +297,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
               <ListItemButton selected={page === 'deployments'}>
                 <ListItemIcon>
                   {!open ? (
-                    <Tooltip title='My Deployments' arrow placement='right'>
+                    <Tooltip title='My Deployments' arrow placement='right' className='my-deployment-menu-button'>
                       <ViewList />
                     </Tooltip>
                   ) : (
@@ -311,7 +311,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
               <ListItemButton selected={page === 'upload'} data-test='uploadModelLink'>
                 <ListItemIcon>
                   {!open ? (
-                    <Tooltip title='Upload Model' arrow placement='right'>
+                    <Tooltip title='Upload Model' arrow placement='right' className='upload-model-menu-button'>
                       <FileUploadIcon />
                     </Tooltip>
                   ) : (
@@ -325,7 +325,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
               <ListItemButton selected={page === 'review'} data-test='reviewLink'>
                 <ListItemIcon>
                   {!open ? (
-                    <Tooltip title='Review' arrow placement='right'>
+                    <Tooltip title='Review' arrow placement='right' className='review-menu-button'>
                       <Badge badgeContent={isNumApprovalsLoading ? 0 : numApprovals} color='secondary'>
                         <ListAltIcon />
                       </Badge>
@@ -342,7 +342,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
               <ListItemButton selected={page === 'api'} data-test='apiDocsLink'>
                 <ListItemIcon>
                   {!open ? (
-                    <Tooltip title='API' arrow placement='right'>
+                    <Tooltip title='API' arrow placement='right' className='API-menu-button'>
                       <LinkIcon />
                     </Tooltip>
                   ) : (
@@ -356,7 +356,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
               <ListItemButton selected={page === 'help'} data-test='supportLink'>
                 <ListItemIcon>
                   {!open ? (
-                    <Tooltip title='Help & Support' arrow placement='right'>
+                    <Tooltip title='Help & Support' arrow placement='right' className='help-support-menu-button'>
                       <ContactSupportIcon />
                     </Tooltip>
                   ) : (
@@ -373,7 +373,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
                   <ListItemButton selected={page === 'admin'}>
                     <ListItemIcon data-test='adminLink'>
                       {!open ? (
-                        <Tooltip arrow title='Admin' placement='right'>
+                        <Tooltip arrow title='Admin' placement='right' className='admin-menu-button'>
                           <AdminIcon />
                         </Tooltip>
                       ) : (
@@ -387,7 +387,7 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
                   <ListItemButton selected={page === 'schemas'}>
                     <ListItemIcon data-test='designSchemaLink'>
                       {!open ? (
-                        <Tooltip arrow title='Schemas' placement='right'>
+                        <Tooltip arrow title='Schemas' placement='right' className='schemas-menu-button'>
                           <SchemaIcon />
                         </Tooltip>
                       ) : (

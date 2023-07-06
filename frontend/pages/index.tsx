@@ -63,7 +63,13 @@ export default function ExploreModels() {
           marginBottom: 3,
         }}
       >
-        <InputBase sx={{ ml: 1, flex: 1 }} placeholder='Filter Models' value={filter} onChange={handleFilterChange} />
+        <InputBase
+          sx={{ ml: 1, flex: 1 }}
+          placeholder='Filter Models'
+          value={filter}
+          onChange={handleFilterChange}
+          className='filter-models-filter'
+        />
         <IconButton color='primary' type='submit' sx={{ p: '10px' }} aria-label='filter'>
           <SearchIcon />
         </IconButton>
@@ -72,9 +78,9 @@ export default function ExploreModels() {
         <Paper sx={{ py: 2, px: 4 }}>
           <Box sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }} data-test='indexPageTabs'>
             <Tabs value={group} onChange={handleGroupChange} aria-label='basic tabs example'>
-              <Tab label='All Models' value='all' />
-              <Tab label='My Models' value='user' />
-              <Tab label='Favourites' value='favourites' data-test='favouriteModelsTab' />
+              <Tab label='All Models' value='all' className='all-models-tab' />
+              <Tab label='My Models' value='user' className='my-models-tab' />
+              <Tab label='Favourites' value='favourites' data-test='favouriteModelsTab' className='favourites-tab' />
             </Tabs>
           </Box>
           <Box data-test='modelListBox'>
