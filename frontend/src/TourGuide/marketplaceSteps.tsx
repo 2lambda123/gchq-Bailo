@@ -4,7 +4,7 @@ export const marketplaceSteps = [
     content: (
       <>
         <p>
-          <strong>Welcome to Bailo Marketplace Tour! </strong>
+          <strong>Welcome to Bailo Tour! </strong>
         </p>
         <p>To get you started we will walk you through some of the features of Bailo.</p>
         <p>We will show you tours relevant to the page you are on, rather than showing you everything at once.</p>
