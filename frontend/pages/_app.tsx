@@ -37,17 +37,7 @@ export default function MyApp(props: MyAppProps) {
       </Head>
       <ThemeProvider theme={themeModeValue.theme}>
         <ThemeModeContext.Provider value={themeModeValue}>
-          <TourProvider
-            steps={marketplaceSteps}
-            onClickClose={({ setCurrentStep, currentStep, steps, setIsOpen }) => {
-              if (steps) {
-                if (currentStep === steps.length - 1) {
-                  setIsOpen(false)
-                }
-                setCurrentStep((s) => (s === steps.length - 1 ? 0 : s + 1))
-              }
-            }}
-          >
+          <TourProvider steps={marketplaceSteps}>
             <SnackbarProvider>
               <CssBaseline />
               <Component {...pageProps} />

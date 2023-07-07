@@ -104,7 +104,9 @@ export default function Wrapper({ title, page, children }: WrapperProps): ReactE
   const isDocsPage = useMemo(() => page.startsWith('docs'), [page])
 
   const { setIsOpen } = useTour()
-  setIsOpen(true)
+  React.useEffect(() => {
+    setIsOpen(true)
+  }, [])
 
   const [open, setOpen] = useState(false)
   const toggleDrawer = (): void => {
