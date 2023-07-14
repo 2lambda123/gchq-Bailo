@@ -5,8 +5,8 @@ import OpenShift from 'openshift-rest-client'
 
 import { ModelDoc, VersionDoc } from '../common/types/types.js'
 import config from '../common/utils/config.js'
+import { BuildLogger } from '../utils/BuildLogger.js'
 import { getAdminToken } from '../utils/registryAuth.js'
-import { BuildLogger } from './BuildLogger.js'
 import { BuildOpts, BuildStep, Files } from './BuildStep.js'
 
 const { OpenshiftClient } = OpenShift

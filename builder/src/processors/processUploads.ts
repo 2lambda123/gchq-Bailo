@@ -1,19 +1,19 @@
 import { QueueMessage } from 'p-mongo-queue'
 
+import { Build, BuildTasks } from '../builders/Build.js'
+import createWorkingDirectory from '../buildSteps/CreateWorkingDirectory.js'
+import extractFiles from '../buildSteps/ExtractFiles.js'
+import getRawFiles from '../buildSteps/GetRawFiles.js'
+import getSeldonDockerfile from '../buildSteps/GetSeldonDockerfile.js'
+import imgBuildDockerfile from '../buildSteps/ImgBuildDockerfile.js'
+import openshiftBuildDockerfile from '../buildSteps/OpenShiftBuildDockerfile.js'
+import pushDockerTar from '../buildSteps/PushDockerTar.js'
 import VersionModel from '../common/models/Version.js'
 import { ModelUploadType } from '../common/types/types.js'
 import config from '../common/utils/config.js'
 import logger from '../common/utils/logger.js'
 import { getUserByInternalId } from '../services/user.js'
-import { findVersionById, markVersionBuilt } from '../services/version.js'
-import { BuildHandler, BuildTasks } from '../utils/BuildHandler.js'
-import createWorkingDirectory from '../utils/CreateWorkingDirectory.js'
-import extractFiles from '../utils/ExtractFiles.js'
-import getRawFiles from '../utils/GetRawFiles.js'
-import getSeldonDockerfile from '../utils/GetSeldonDockerfile.js'
-import imgBuildDockerfile from '../utils/ImgBuildDockerfile.js'
-import openshiftBuildDockerfile from '../utils/OpenShiftBuildDockerfile.js'
-import pushDockerTar from '../utils/PushDockerTar.js'
+import { markVersionBuilt } from '../services/version.js'
 import { getUploadQueue } from '../utils/queues.js'
 
 
@@ -75,13 +75,13 @@ export default async function processUploads() {
         throw new Error(`Unexpected build type: ${msg.payload.uploadType}`)
     }
 
-    const buildHandler = new BuildHandler(tasks)
-    await buildHandler.process(version, {
+    const build = new Build(tasks)
+    await build.process(version, {
       binary: msg.payload.binary,
       code: msg.payload.code,
       docker: msg.payload.docker,
     })
 
-   await markVersionBuilt(version._id)
+    markVersionBuilt(version._id)
   })
 }

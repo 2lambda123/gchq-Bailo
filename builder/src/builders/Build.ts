@@ -2,10 +2,10 @@ import indentString from 'indent-string'
 import prettyMs from 'pretty-ms'
 import { v4 as uuidv4 } from 'uuid'
 
+import { BuildStep, Files } from '../buildSteps/BuildStep.js'
 import { VersionDoc } from '../common/types/types.js'
 import logger from '../common/utils/logger.js'
-import { BuildLogger } from './BuildLogger.js'
-import { BuildStep, Files } from './BuildStep.js'
+import { BuildLogger } from '../utils/BuildLogger.js'
 
 type BuildConstructor = (logger: BuildLogger, props?: any) => BuildStep
 export type BuildTasks = { construct: BuildConstructor; props?: any }[]
@@ -20,7 +20,7 @@ function formatError(e: unknown): string {
   return JSON.stringify(e)
 }
 
-export class BuildHandler {
+export class Build {
   steps: { construct: BuildConstructor; props?: any }[]
 
   constructor(steps: { construct: BuildConstructor; props?: any }[]) {

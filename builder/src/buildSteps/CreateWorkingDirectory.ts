@@ -5,7 +5,7 @@ import shelljs from 'shelljs'
 import { v4 as uuidv4 } from 'uuid'
 
 import { VersionDoc } from '../common/types/types.js'
-import { BuildLogger } from './BuildLogger.js'
+import { BuildLogger } from '../utils/BuildLogger.js'
 import { BuildOpts, BuildStep, Files } from './BuildStep.js'
 
 const { mkdir, rm } = shelljs

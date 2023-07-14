@@ -3,7 +3,7 @@ import shelljs from 'shelljs'
 
 import { ModelDoc, VersionDoc } from '../common/types/types.js'
 import { ImageRef, uploadDockerExport } from '../common/utils/skopeo.js'
-import { BuildLogger } from './BuildLogger.js'
+import { BuildLogger } from '../utils/BuildLogger.js'
 import { BuildOpts, BuildStep, Files } from './BuildStep.js'
 
 const { rm } = shelljs

@@ -7,10 +7,10 @@ import { join } from 'path'
 import { ModelDoc, VersionDoc } from '../common/types/types.js'
 import config from '../common/utils/config.js'
 import { checkFileExists, ensurePathExists } from '../common/utils/filesystem.js'
-import { logCommand } from './build.js'
-import { BuildLogger } from './BuildLogger.js'
+import { logCommand } from '../utils/build.js'
+import { BuildLogger } from '../utils/BuildLogger.js'
+import { getAdminToken } from '../utils/registryAuth.js'
 import { BuildOpts, BuildStep, Files } from './BuildStep.js'
-import { getAdminToken } from './registryAuth.js'
 
 async function setRegistryLogin(registry: string, username: string, password: string) {
   const folder = join(homedir(), '.docker')

@@ -8,8 +8,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { VersionDoc } from '../common/types/types.js'
 import config from '../common/utils/config.js'
-import { logCommand } from './build.js'
-import { BuildLogger } from './BuildLogger.js'
+import { logCommand } from '../utils/build.js'
+import { BuildLogger } from '../utils/BuildLogger.js'
 import { BuildOpts, BuildStep, Files } from './BuildStep.js'
 
 const { rm, mkdir } = shelljs
