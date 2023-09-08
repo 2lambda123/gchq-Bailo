@@ -67,7 +67,7 @@ export default function TemplatePage({ model }: TemplatePageProps) {
               <Typography component='h3' variant='h6'>
                 Create from scratch
               </Typography>
-              <Typography variant='body1'>Create a model from scratch using a predifined schema.</Typography>
+              <Typography variant='body1'>Create a model from scratch using a predefined schema.</Typography>
               <Button variant='contained' onClick={createFromScratchOnClick}>
                 Create
               </Button>
