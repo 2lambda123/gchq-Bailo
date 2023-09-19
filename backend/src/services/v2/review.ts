@@ -20,31 +20,34 @@ export async function findReviews(user: UserDoc, active: boolean, modelId?: stri
     .lookup({ from: 'v2_models', localField: 'modelId', foreignField: 'id', as: 'model' })
     // Populate model as value instead of array
     .unwind({ path: '$model' })
-    .match({
-      $expr: {
-        $gt: [
-          {
-            $size: {
-              $filter: {
-                input: '$model.collaborators',
-                as: 'item',
-                cond: {
-                  $and: [
-                    {
-                      $in: ['$$item.entity', await authorisation.getEntities(user)],
-                    },
-                    {
-                      $in: ['$role', '$$item.roles'],
-                    },
-                  ],
+    .match(
+      // Move this into one variable
+      {
+        $expr: {
+          $gt: [
+            {
+              $size: {
+                $filter: {
+                  input: '$model.collaborators',
+                  as: 'item',
+                  cond: {
+                    $and: [
+                      {
+                        $in: ['$$item.entity', await authorisation.getEntities(user)],
+                      },
+                      {
+                        $in: ['$role', '$$item.roles'],
+                      },
+                    ],
+                  },
                 },
               },
             },
-          },
-          0,
-        ],
+            0,
+          ],
+        },
       },
-    })
+    )
 
   return reviews
 }
