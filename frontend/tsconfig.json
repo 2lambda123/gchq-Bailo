@@ -15,8 +15,20 @@
     "jsx": "preserve",
     "jsxImportSource": "@emotion/react",
     "incremental": true,
+    "noImplicitAny": false,
     "baseUrl": ".",
-    "noImplicitAny": false
+    "paths": {
+      "@/actions/*": ["./actions/*"],
+      "@/components/*": ["./components/*"],
+      "@/cypress/*": ["./cypress/*"],
+      "@/data/*": ["./data/*"],
+      "@/pages/*": ["./pages/*"],
+      "@/public/*": ["./public/*"],
+      "@/src/*": ["./src/*"],
+      "@/styles/*": ["./styles/*"],
+      "@/types/*": ["./types/*"],
+      "@/utils/*": ["./utils/*"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
