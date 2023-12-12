@@ -1,4 +1,3 @@
-import AdminIcon from '@mui/icons-material/AdminPanelSettings'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ContactSupportIcon from '@mui/icons-material/ContactSupport'
 import DashboardIcon from '@mui/icons-material/Dashboard'
@@ -200,22 +199,6 @@ export default function SideNavigation({
             <>
               <Divider />
               <StyledList>
-                <ListItem disablePadding>
-                  <Link href='/admin'>
-                    <ListItemButton selected={page === 'admin'}>
-                      <ListItemIcon data-test='adminLink'>
-                        {!drawerOpen ? (
-                          <Tooltip arrow title='Admin' placement='right'>
-                            <AdminIcon />
-                          </Tooltip>
-                        ) : (
-                          <AdminIcon />
-                        )}
-                      </ListItemIcon>
-                      <ListItemText primary='Admin' />
-                    </ListItemButton>
-                  </Link>
-                </ListItem>
                 <ListItem disablePadding>
                   <Link href='/beta/schemas/list'>
                     <ListItemButton selected={page === 'schemas'}>
