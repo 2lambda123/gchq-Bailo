@@ -1,0 +1,58 @@
+import DocsWrapper from 'src/docs/DocsWrapper'
+
+# Connectors
+
+There are Connectors for authentication, authorisation and auditing. Each connector provides a specific implementation
+for a specific use-case and can be selected via configuration. The 'kind' value for each connector that can be used in
+the configuration can be found in the table below in the 'Configuration ID' column.
+
+Connectors have been designed to enable developers to add further connectors. Details of this can found in the
+'Developers' section of documentation.
+
+| Type           | Configuration ID | Description                                                    |
+| -------------- | ---------------- | -------------------------------------------------------------- |
+| Authentication | silly            | Provides a single development user. NOT for use in production. |
+|                | oauth            | Oauth Authentication via a provider.                           |
+| Authorisation  | basic            | Implements standard Bailo authorisation.                       |
+| Audit          | silly            | Does no auditing.                                              |
+|                | stdout           | Prints basic audit events to stdout.                           |
+
+## Configuration
+
+Some connectors require specific additional configuration.
+
+### Oauth Authentication Connector
+
+```bash
+  oauth: {
+    provider: 'cognito',
+
+    grant: {
+      defaults: {
+        origin: '',
+      },
+
+      cognito: {
+        key: '',
+        secret: '',
+        dynamic: ['scope'],
+        response: ['tokens', 'raw', 'jwt'],
+        callback: '/',
+        subdomain: '',
+      },
+    },
+    cognito: {
+      identityProviderClient: {
+        region: '',
+        credentials: {
+          accessKeyId: '',
+          secretAccessKey: '',
+        },
+      },
+      userPoolId: '',
+      userIdAttribute: '',
+    },
+  },
+```
+
+export default ({ children }) => <DocsWrapper>{children}</DocsWrapper>

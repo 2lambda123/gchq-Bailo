@@ -1,0 +1,26 @@
+import DocsWrapper from 'src/docs/DocsWrapper'
+
+# Adding a Connector
+
+To find out more about Connectors and the standard connectors, see the documentation page in the 'Administration'
+section. Connectors have been designed to enable developers to implement their own connector for a specific use-case.
+
+Each connector type has a base class that defines the necessary methods for that type and the 'silly' implementations
+are good examples of a simple implementation of all the required methods.
+
+The recommended steps for implementing a new connector are:
+
+1.  Create the new connector class.
+
+- The class must extend the relevant base class.
+- All abstract methods of the base class have been implemented.
+
+2. Update relevant 'index.ts' file.
+
+- Add the identifier that will be used in the connector configuration to the Enum.
+- Add a new case to the switch statement that using the new Enum that creates an object using the new connector class.
+
+3. Update the application configuration to set the relevant connector kind to the new value defined in the Enum in
+   'index.ts'
+
+export default ({ children }) => <DocsWrapper>{children}</DocsWrapper>

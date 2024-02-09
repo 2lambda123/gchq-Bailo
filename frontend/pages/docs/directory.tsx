@@ -49,6 +49,7 @@ export const flatDirectory: Array<DirectoryEntry> = [
   { title: 'Building The Bailo Image', slug: 'administration/getting-started/building-the-bailo-image' },
   { title: 'Authentication', slug: 'administration/getting-started/authentication' },
   { title: 'Helm Deployments', slug: 'administration/getting-started/helm-deployments' },
+  { title: 'Connectors', slug: 'administration/getting-started/connectors' },
   { title: 'Isolated Network Deployment', slug: 'administration/getting-started/isolated-network-deployment' },
   { title: 'Configuration', slug: 'administration/getting-started/configuration', header: true },
   { title: 'App Configuration', slug: 'administration/getting-started/configuration/app-configuration' },
@@ -68,6 +69,7 @@ export const flatDirectory: Array<DirectoryEntry> = [
 
   { title: 'Processes', slug: 'developers/processes', header: true },
   { title: 'Adding An Endpoint', slug: 'developers/processes/adding-an-endpoint' },
+  { title: 'Add a Connector', slug: 'developers/processes/adding-a-connector' },
 
   { title: 'Testing', slug: 'developers/testing', header: true },
   { title: 'Unit Testing', slug: 'developers/testing/unit-testing' },
