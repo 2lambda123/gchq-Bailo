@@ -26,6 +26,7 @@ export class OauthAuthenticationConnector extends BaseAuthenticationConnector {
       {
         middleware: [
           session({
+            name: 'session',
             secret: config.session.secret,
             resave: true,
             saveUninitialized: true,

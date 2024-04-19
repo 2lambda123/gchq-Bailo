@@ -7,6 +7,7 @@ import { expressErrorHandler } from './routes/middleware/expressErrorHandler.js'
 import { expressLogger } from './routes/middleware/expressLogger.js'
 import { requestId } from './routes/middleware/requestId.js'
 import { getDockerRegistryAuth } from './routes/v1/registryAuth.js'
+import { postToken } from './routes/v2/auth/postToken.js'
 import { getCurrentUser } from './routes/v2/entities/getCurrentUser.js'
 import { getEntities } from './routes/v2/entities/getEntities.js'
 import { getEntityLookup } from './routes/v2/entities/getEntityLookup.js'
@@ -193,6 +194,8 @@ server.post('/api/v2/user/tokens', ...postUserToken)
 server.get('/api/v2/user/tokens', ...getUserTokens)
 // server.get('/api/v2/user/:userId/token/:tokenId', ...getUserToken)
 server.delete('/api/v2/user/token/:accessKey', ...deleteUserToken)
+
+server.post('/api/v2/auth/token', ...postToken)
 
 server.get('/api/v2/specification', ...getSpecification)
 
