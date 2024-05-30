@@ -1,5 +1,5 @@
 import CommentIcon from '@mui/icons-material/ChatBubble'
-import { Box, Button, Card, Divider, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Card, Divider, LinearProgress, Stack, Tooltip, Typography } from '@mui/material'
 import { useGetReviewRequestsForModel } from 'actions/review'
 import { useGetUiConfig } from 'actions/uiConfig'
 import { useRouter } from 'next/router'
@@ -147,6 +147,21 @@ export default function ReleaseDisplay({
                   </Tooltip>
                 )}
               </Stack>
+              <Divider flexItem />
+              <Box>
+                <Typography fontWeight='bold'>Mirror in progress...</Typography>
+                <Typography>File 5/10 - MyDocument.docx</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ width: '100%', mr: 1 }}>
+                    <LinearProgress variant='determinate' value={50} />
+                  </Box>
+                  <Box sx={{ minWidth: 35 }}>
+                    <Typography variant='body2' color='text.secondary'>
+                      50%
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
             </Stack>
           </Stack>
         </Card>
