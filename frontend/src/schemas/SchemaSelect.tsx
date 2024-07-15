@@ -23,15 +23,22 @@ import Loading from 'src/common/Loading'
 import Link from 'src/Link'
 import MessageAlert from 'src/MessageAlert'
 import SchemaButton from 'src/schemas/SchemaButton'
-import { EntryInterface, EntryKind, SchemaInterface, SchemaKind, SchemaKindKeys, SchemaKindLabel } from 'types/types'
+import {
+  EntryInterface,
+  EntryKind,
+  EntryKindLabel,
+  SchemaInterface,
+  SchemaKind,
+  SchemaKindKeys,
+  SchemaKindLabel,
+} from 'types/types'
 
 type SchemaSelectProps = {
   schemaKind: SchemaKindKeys
-  entry?: EntryInterface
-  id?: string
+  entry: EntryInterface
 }
 
-export default function SchemaSelect({ schemaKind, entry, id }: SchemaSelectProps) {
+export default function SchemaSelect({ schemaKind, entry }: SchemaSelectProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -39,7 +46,7 @@ export default function SchemaSelect({ schemaKind, entry, id }: SchemaSelectProp
   const { schemas, isSchemasLoading, isSchemasError } = useGetSchemas(schemaKind)
   const { currentUser, isCurrentUserLoading, isCurrentUserError } = useGetCurrentUser()
 
-  const { mutateModel: mutateEntry } = useGetModel(id, EntryKind[schemaKind])
+  const { mutateModel: mutateEntry } = useGetModel(entry.id, EntryKind[schemaKind])
 
   const isLoadingData = useMemo(
     () => isSchemasLoading || isCurrentUserLoading,
@@ -52,9 +59,9 @@ export default function SchemaSelect({ schemaKind, entry, id }: SchemaSelectProp
   const accessRequestCallback = useCallback(
     async (newSchema: SchemaInterface) => {
       setLoading(true)
-      router.push(`/model/${id}/access-request/new?schemaId=${newSchema.id}`)
+      router.push(`/model/${entry.id}/access-request/new?schemaId=${newSchema.id}`)
     },
-    [id, router],
+    [entry.id, router],
   )
 
   const entryCallback = useCallback(
@@ -84,11 +91,10 @@ export default function SchemaSelect({ schemaKind, entry, id }: SchemaSelectProp
     width: '100%',
   } as const
 
-  let selectionCallback = entryCallback
-
-  if (schemaKind === SchemaKind.ACCESS_REQUEST) {
-    selectionCallback = accessRequestCallback
-  }
+  const selectionCallback = useMemo(
+    () => (schemaKind === SchemaKind.ACCESS_REQUEST ? accessRequestCallback : entryCallback),
+    [schemaKind, accessRequestCallback, entryCallback],
+  )
 
   const activeSchemaButtons = useMemo(
     () =>
@@ -124,8 +130,6 @@ export default function SchemaSelect({ schemaKind, entry, id }: SchemaSelectProp
     [inactiveSchemas, selectionCallback, loading],
   )
 
-  const link = schemaKind === SchemaKind.ACCESS_REQUEST ? `/model/${id}` : `/${schemaKind}/${id}`
-
   if (isSchemasError) {
     return <MessageAlert message={isSchemasError.info.message} severity='error' />
   }
@@ -140,9 +144,9 @@ export default function SchemaSelect({ schemaKind, entry, id }: SchemaSelectProp
       {!isLoadingData && (
         <Container maxWidth='md'>
           <Card sx={{ mx: 'auto', my: 4, p: 4 }}>
-            <Link href={link}>
+            <Link href={`/${entry.kind}/${entry.id}`}>
               <Button sx={{ width: 'fit-content' }} startIcon={<ArrowBack />}>
-                {`Back to ${SchemaKindLabel[schemaKind]}`}
+                {`Back to ${EntryKindLabel[entry.kind]}`}
               </Button>
             </Link>
             <Stack spacing={2} justifyContent='center' alignItems='center'>
