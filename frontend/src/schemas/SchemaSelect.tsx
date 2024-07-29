@@ -23,21 +23,30 @@ import Loading from 'src/common/Loading'
 import Link from 'src/Link'
 import MessageAlert from 'src/MessageAlert'
 import SchemaButton from 'src/schemas/SchemaButton'
-import { EntryInterface, EntryKind, EntryKindLabel, SchemaInterface, SchemaKind } from 'types/types'
+import {
+  EntryInterface,
+  EntryKind,
+  EntryKindLabel,
+  SchemaInterface,
+  SchemaKind,
+  SchemaKindKeys,
+  SchemaKindLabel,
+} from 'types/types'
 
 type SchemaSelectProps = {
+  schemaKind: SchemaKindKeys
   entry: EntryInterface
 }
 
-export default function SchemaSelect({ entry }: SchemaSelectProps) {
+export default function SchemaSelect({ schemaKind, entry }: SchemaSelectProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const { schemas, isSchemasLoading, isSchemasError } = useGetSchemas(
-    entry.kind === EntryKind.MODEL ? SchemaKind.MODEL : SchemaKind.DATA_CARD,
-  )
+
+  const { schemas, isSchemasLoading, isSchemasError } = useGetSchemas(schemaKind)
   const { currentUser, isCurrentUserLoading, isCurrentUserError } = useGetCurrentUser()
-  const { mutateModel: mutateEntry } = useGetModel(entry.id, entry.kind)
+
+  const { mutateModel: mutateEntry } = useGetModel(entry.id, EntryKind[schemaKind])
 
   const isLoadingData = useMemo(
     () => isSchemasLoading || isCurrentUserLoading,
@@ -47,7 +56,15 @@ export default function SchemaSelect({ entry }: SchemaSelectProps) {
   const activeSchemas = useMemo(() => schemas.filter((schema) => schema.active), [schemas])
   const inactiveSchemas = useMemo(() => schemas.filter((schema) => !schema.active), [schemas])
 
-  const createEntryCardUsingSchema = useCallback(
+  const accessRequestCallback = useCallback(
+    async (newSchema: SchemaInterface) => {
+      setLoading(true)
+      router.push(`/model/${entry.id}/access-request/new?schemaId=${newSchema.id}`)
+    },
+    [entry.id, router],
+  )
+
+  const entryCallback = useCallback(
     async (newSchema: SchemaInterface) => {
       if (currentUser && entry) {
         setLoading(true)
@@ -74,6 +91,11 @@ export default function SchemaSelect({ entry }: SchemaSelectProps) {
     width: '100%',
   } as const
 
+  const selectionCallback = useMemo(
+    () => (schemaKind === SchemaKind.ACCESS_REQUEST ? accessRequestCallback : entryCallback),
+    [schemaKind, accessRequestCallback, entryCallback],
+  )
+
   const activeSchemaButtons = useMemo(
     () =>
       activeSchemas.length ? (
@@ -82,13 +104,13 @@ export default function SchemaSelect({ entry }: SchemaSelectProps) {
             key={activeSchema.id}
             schema={activeSchema}
             loading={loading}
-            onClick={() => createEntryCardUsingSchema(activeSchema)}
+            onClick={() => selectionCallback(activeSchema)}
           />
         ))
       ) : (
         <EmptyBlob text='Could not find any active schemas' />
       ),
-    [activeSchemas, createEntryCardUsingSchema, loading],
+    [activeSchemas, selectionCallback, loading],
   )
 
   const inactiveSchemaButtons = useMemo(
@@ -99,13 +121,13 @@ export default function SchemaSelect({ entry }: SchemaSelectProps) {
             key={inactiveSchema.id}
             schema={inactiveSchema}
             loading={loading}
-            onClick={() => createEntryCardUsingSchema(inactiveSchema)}
+            onClick={() => selectionCallback(inactiveSchema)}
           />
         ))
       ) : (
         <EmptyBlob text='Could not find any inactive schemas' />
       ),
-    [inactiveSchemas, createEntryCardUsingSchema, loading],
+    [inactiveSchemas, selectionCallback, loading],
   )
 
   if (isSchemasError) {
@@ -134,7 +156,7 @@ export default function SchemaSelect({ entry }: SchemaSelectProps) {
               <Schema fontSize='large' color='primary' />
               <Typography variant='body1'>
                 Each organisation may have a different set of questions they require you to answer about any
-                {` ${EntryKindLabel[entry.kind]}`} you create. Select from the list below:
+                {` ${SchemaKindLabel[schemaKind]}`} you create. Select from the list below:
               </Typography>
             </Stack>
             <Stack sx={{ mt: 2 }} spacing={2} alignItems='center'>
