@@ -20,7 +20,7 @@
     "@fontsource/pacifico": "^5.0.13",
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
-    "@mui/icons-material": "^5.16.0",
+    "@mui/icons-material": "^5.16.7",
     "@mui/lab": "^5.0.0-alpha.171",
     "@mui/material": "^5.16.0",
     "@mui/material-nextjs": "^5.15.11",
