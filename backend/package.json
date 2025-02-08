@@ -45,7 +45,7 @@
     "dev-null": "^0.1.1",
     "express": "^5.0.1",
     "express-session": "^1.18.1",
-    "grant": "^5.4.23",
+    "grant": "^5.4.24",
     "jsonschema": "^1.5.0",
     "jsonwebtoken": "^9.0.2",
     "jsrsasign": "^11.1.0",
@@ -103,6 +103,6 @@
     "supertest": "^7.0.0",
     "typescript": "^5.7.3",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^2.1.6"
+    "vitest": "^2.1.9"
   }
 }
