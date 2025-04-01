@@ -24,7 +24,7 @@
     "@mui/lab": "^5.0.0-alpha.171",
     "@mui/material": "^5.16.0",
     "@mui/material-nextjs": "^5.15.11",
-    "@mui/x-date-pickers": "^7.9.0",
+    "@mui/x-date-pickers": "^7.28.2",
     "@next/mdx": "^14.2.4",
     "@rjsf/core": "^5.19.2",
     "@rjsf/mui": "^5.24.2",
